@@ -5,16 +5,32 @@
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+@theme {
+  /* Asegúrate de que esta línea esté, es la que expone la variable de next/font a Tailwind */
+  --font-montserrat: var(--font-montserrat); 
+  --color-primary: oklch(82.72% 0.171 80.53);    /* #ffb800 */
+  --color-secondary: oklch(34.03% 0.151 272.33);  /* #222884 */
+  --color-negro: oklch(14.07% 0.038 266.6);    /* #1c2432 */
+  --color-rosado: oklch(84.44% 0.063 336.5);   /* #F2C6DE */
+  --color-morado: oklch(70.73% 0.117 296.8);   /* #BCA7E8 */
+  --color-m2: oklch(47.45% 0.064 274.6);     /* #626ABF */
+  --color-fondo: oklch(80.59% 0.021 69.5);    /* #d1c7bd */
+  --color-gris: oklch(84.34% 0.003 270);      /* #D9D9D9 */
+  --color-mint-500: oklch(0.72 0.11 178);
+
+  /* Aquí irían otras variables de tema si las quisieras definir en Tailwind v4,
+     como colores, spacing, etc.
+     Ejemplo:
+     --color-primary: 0 0 0; // Negro, usando valores RGB/HSL
+     --space-4: 1rem;
+  */
 }
+
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    /* --background: #0a0a0a; */
     --foreground: #ededed;
   }
 }
@@ -22,5 +38,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* font-family: Arial, Helvetica, sans-serif; */
 }
