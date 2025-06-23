@@ -1,10 +1,13 @@
+// src/app/components/ReservationForm.js
+
 "use client";
 
-import { gql, useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { GET_CARS } from "@/lib/graphql/cars";
+
+import { GET_CAR_TYPES } from "@/lib/graphql/cars"; // Asegúrate de que la ruta sea correcta y que apunte a carTypes.js
 import { CREATE_RESERVATION } from "@/lib/graphql/reservations";
-import { CREATE_CUSTOMER } from "@/lib/graphql/customers";
+import { CREATE_CUSTOMER } from "@/lib/graphql/customers"; // Asegúrate de que esta ruta sea correcta
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -15,7 +18,7 @@ export default function ReservationForm() {
 		dropoff_date: "",
 		dropoff_time: "10:00",
 		location: "",
-		car: "",
+		selectedTypeId: "", // Almacena solo el documentId del tipo de carro
 		totalPrice: 0,
 	});
 
@@ -32,16 +35,12 @@ export default function ReservationForm() {
 	const [formSubmissionMessage, setFormSubmissionMessage] = useState("");
 	const [isSubmissionError, setIsSubmissionError] = useState(false);
 
-	// const { data: carData, loading: carsLoading } = useQuery(GET_CARS);
-	const { data: carData, loading: carsLoading } = useQuery(GET_CARS, {
-		variables: {
-			filters: {
-				available: {
-					eq: true,
-				},
-			},
-		},
-	});
+	// Consulta para obtener los tipos de carro disponibles
+	const {
+		data: carTypesData,
+		loading: carTypesLoading,
+		error: carTypesError,
+	} = useQuery(GET_CAR_TYPES);
 
 	const [
 		createReservation,
@@ -72,10 +71,18 @@ export default function ReservationForm() {
 		return timeStr;
 	};
 
+	// Efecto para calcular el precio total cuando cambian las fechas o el tipo de carro
 	useEffect(() => {
-		const { pickup_date, dropoff_date, car } = reservationFormData;
+		const { pickup_date, dropoff_date, selectedTypeId } = reservationFormData;
 
-		if (!pickup_date || !dropoff_date || !car || !carData || carsLoading) {
+		// Solo calcular si tenemos fechas, un tipo de carro seleccionado y los datos de tipos cargados
+		if (
+			!pickup_date ||
+			!dropoff_date ||
+			!selectedTypeId ||
+			!carTypesData ||
+			carTypesLoading
+		) {
 			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
 			setDateValidationError(null);
 			return;
@@ -84,6 +91,7 @@ export default function ReservationForm() {
 		const pickupDateObj = new Date(pickup_date);
 		const dropoffDateObj = new Date(dropoff_date);
 
+		// Validar que la fecha de regreso no sea anterior a la de inicio
 		if (dropoffDateObj < pickupDateObj) {
 			setDateValidationError(
 				"La fecha de regreso no puede ser anterior a la fecha de inicio."
@@ -94,22 +102,27 @@ export default function ReservationForm() {
 			setDateValidationError(null);
 		}
 
-		const selectedCar = carData.cars.find((c) => c.documentId === car);
+		// Buscar el precio del tipo de carro seleccionado
+		// Asegúrate de que carTypesData.types es el camino correcto a tu array de tipos de carro
+		const selectedCarType = carTypesData.types.find(
+			(type) => type.documentId === selectedTypeId
+		);
 
-		if (!selectedCar) {
+		if (!selectedCarType) {
 			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
 			return;
 		}
 
-		const pricePerDay = selectedCar.price_per_day;
+		const pricePerDay = selectedCarType.price; // Usar el precio del tipo de carro
 
 		const timeDiff = dropoffDateObj.getTime() - pickupDateObj.getTime();
 		let numberOfDays = Math.round(timeDiff / MS_PER_DAY);
 
+		// Si la diferencia es 0 días, significa que es por al menos 1 día
 		if (numberOfDays === 0) {
 			numberOfDays = 1;
 		} else {
-			numberOfDays += 1;
+			numberOfDays += 1; // Sumar 1 para incluir el día de retorno completo
 		}
 
 		const calculatedTotalPrice = numberOfDays * pricePerDay;
@@ -120,10 +133,9 @@ export default function ReservationForm() {
 	}, [
 		reservationFormData.pickup_date,
 		reservationFormData.dropoff_date,
-		reservationFormData.car,
-		// reservationFormData,
-		carData,
-		carsLoading,
+		reservationFormData.selectedTypeId,
+		carTypesData,
+		carTypesLoading,
 	]);
 
 	// Función para manejar el envío del formulario de RESERVA (primera etapa)
@@ -141,7 +153,7 @@ export default function ReservationForm() {
 
 		if (reservationFormData.totalPrice <= 0) {
 			setFormSubmissionMessage(
-				"El precio total no se pudo calcular. Por favor, verifica las fechas y el carro seleccionado."
+				"El precio total no se pudo calcular. Por favor, verifica las fechas y el tipo de carro seleccionado."
 			);
 			setIsSubmissionError(true);
 			return;
@@ -173,19 +185,20 @@ export default function ReservationForm() {
 
 		try {
 			// 1. Crear el Cliente en Strapi
-			// ----- CONSOLE LOG PARA createCustomer -----
-			console.log("Datos enviados a createCustomer:", clientFormData);
-			// ------------------------------------------
+			console.log(
+				"Datos del cliente que se enviarán a Strapi (CREATE_CUSTOMER):",
+				clientFormData
+			);
 			const customerResponse = await createCustomer({
 				variables: {
-					data: clientFormData, // Usa los datos del cliente del modal
+					data: clientFormData,
 				},
 			});
 
 			const customerDocumentId =
 				customerResponse.data.createCustomer.documentId;
 			console.log(
-				"documentId del cliente creado (obtenido de la respuesta):",
+				"documentId del cliente creado (obtenido de la respuesta de Strapi):",
 				customerDocumentId
 			);
 
@@ -196,20 +209,23 @@ export default function ReservationForm() {
 				reservationFormData.dropoff_time
 			);
 
-			// 2. Crear la Reserva en Strapi, vinculando el documentId del cliente
+			// 2. Crear la Reserva en Strapi
+			// *** CAMBIO CLAVE AQUÍ: 'type' ahora solo envía el documentId ***
 			const reservationInputData = {
 				pickup_date: reservationFormData.pickup_date,
 				pickup_time: formattedPickupTime,
 				dropoff_date: reservationFormData.dropoff_date,
 				dropoff_time: formattedDropoffTime,
 				location: reservationFormData.location,
-				car: reservationFormData.car, // Esto ya es el documentId del carro
+				type: reservationFormData.selectedTypeId, // ¡SOLO EL DOCUMENTID!
 				total_price: reservationFormData.totalPrice,
-				customer: customerDocumentId, // Aquí se usa el documentId del cliente
+				customer: customerDocumentId,
 			};
-			// ----- CONSOLE LOG PARA createReservation -----
-			console.log("Datos enviados a createReservation:", reservationInputData);
-			// ---------------------------------------------
+
+			console.log(
+				"Datos de la reserva que se enviarán a Strapi (CREATE_RESERVATION):",
+				reservationInputData
+			);
 
 			await createReservation({
 				variables: {
@@ -224,11 +240,11 @@ export default function ReservationForm() {
 			setShowClientModal(false);
 			setReservationFormData({
 				pickup_date: "",
-				pickup_time: "",
+				pickup_time: "10:00",
 				dropoff_date: "",
-				dropoff_time: "",
+				dropoff_time: "10:00",
 				location: "",
-				car: "",
+				selectedTypeId: "",
 				totalPrice: 0,
 			});
 			setClientFormData({
@@ -334,27 +350,32 @@ export default function ReservationForm() {
 					<p className="text-red-600 text-sm">{dateValidationError}</p>
 				)}
 
+				{/* Campo de selección para el Tipo de Carro */}
 				<div>
 					<label
-						htmlFor="car"
+						htmlFor="selectedTypeId"
 						className="block text-sm font-medium text-gray-700"
 					>
-						Selecciona un Carro
+						Selecciona un Tipo de Carro
 					</label>
 					<select
-						id="car"
-						name="car"
-						value={reservationFormData.car}
+						id="selectedTypeId"
+						name="selectedTypeId"
+						value={reservationFormData.selectedTypeId}
 						onChange={handleReservationChange}
 						className="w-full p-2 border rounded text-black"
 						required
 					>
-						<option value="">Selecciona un carro</option>
-						{carsLoading && <option disabled>Cargando carros...</option>}
-						{/* El .map() ahora solo itera sobre carros ya filtrados por Strapi */}
-						{carData?.cars?.map((car, i) => (
-							<option key={i} value={car.documentId}>
-								{car.brand} {car.name} (${car.price_per_day}/día)
+						<option value="">Selecciona un tipo de carro</option>
+						{carTypesLoading && <option disabled>Cargando tipos...</option>}
+						{carTypesError && (
+							<option disabled>
+								Error al cargar tipos: {carTypesError.message}
+							</option>
+						)}
+						{carTypesData?.types?.map((carType) => (
+							<option key={carType.documentId} value={carType.documentId}>
+								{carType.name} (${carType.price}/día)
 							</option>
 						))}
 					</select>
@@ -390,12 +411,14 @@ export default function ReservationForm() {
 					disabled={
 						reservationLoading ||
 						dateValidationError ||
-						reservationFormData.totalPrice <= 0
+						reservationFormData.totalPrice <= 0 ||
+						!reservationFormData.selectedTypeId
 					}
 					className={`w-full bg-blue-600 text-white font-semibold py-2 rounded ${
 						reservationLoading ||
 						dateValidationError ||
-						reservationFormData.totalPrice <= 0
+						reservationFormData.totalPrice <= 0 ||
+						!reservationFormData.selectedTypeId
 							? "bg-gray-400 cursor-not-allowed"
 							: "hover:bg-blue-700"
 					}`}
@@ -405,16 +428,15 @@ export default function ReservationForm() {
 						: "Proceder a Datos del Cliente"}
 				</button>
 
-				{formSubmissionMessage &&
-					!showClientModal && ( // Mostrar mensajes del primer formulario si el modal no está abierto
-						<p
-							className={`mt-3 text-sm ${
-								isSubmissionError ? "text-red-600" : "text-green-600"
-							}`}
-						>
-							{formSubmissionMessage}
-						</p>
-					)}
+				{formSubmissionMessage && !showClientModal && (
+					<p
+						className={`mt-3 text-sm ${
+							isSubmissionError ? "text-red-600" : "text-green-600"
+						}`}
+					>
+						{formSubmissionMessage}
+					</p>
+				)}
 			</form>
 
 			{/* Modal para los Datos del Cliente */}
@@ -526,7 +548,7 @@ export default function ReservationForm() {
 								type="button"
 								onClick={() => {
 									setShowClientModal(false);
-									setFormSubmissionMessage(""); // Limpiar mensajes al cerrar el modal
+									setFormSubmissionMessage("");
 									setIsSubmissionError(false);
 								}}
 								className="w-full bg-gray-300 text-gray-800 font-semibold py-2 rounded mt-2 hover:bg-gray-400"
@@ -534,7 +556,6 @@ export default function ReservationForm() {
 								Cancelar
 							</button>
 
-							{/* Mostrar mensajes de error/éxito dentro del modal si aplica */}
 							{formSubmissionMessage && showClientModal && (
 								<p
 									className={`mt-3 text-sm ${

@@ -10,10 +10,10 @@ import Image from "next/image";
 export default function Home() {
   return (
     <div >
-      {/* <CarsPage/>
+      {/* <CarsPage/> */}
       <ReservationForm />
-      <CarDisplaySection /> */}
-      <Hero/>
+      {/* <CarDisplaySection /> */}
+      {/* <Hero/> */}
 
    
       {/* <ContactForm /> */}

@@ -28,7 +28,7 @@ export default function Hero() {
 			<div className="relative min-h-screen flex flex-col md:flex-row">
 				<div className="relative flex items-center justify-center">
 					<Image
-						src="/image/hero.png"
+						src="/image/banner.png"
 						alt="Fondo"
 						width={800}
 						height={600}
@@ -71,8 +71,8 @@ export default function Hero() {
 					</p>
 				</div>
 			</div>
-			<div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full  p-8 rounded-t-lg z-20">
-				{/* <Re /> */}
+			<div className="absolute top-[calc(100vh-200px)] left-1/2 transform -translate-x-1/2 w-full p-8 rounded-t-lg z-20">
+				{/* Esto lo pondría 200px por encima del fondo de la ventana (aproximadamente) */}
 				<BookingForm />
 			</div>
 		</section>
