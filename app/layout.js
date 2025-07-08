@@ -3,6 +3,8 @@ import "./globals.css";
 import ApolloWrapper from "@/lib/ApolloWrapper";
 import Header from "@/components/Layout/Header";
 import Footer from "@/components/Layout/Footer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const montserrat = Montserrat({
 	subsets: ["latin"],
@@ -21,6 +23,19 @@ export default function RootLayout({ children }) {
 			<body>
 				<Header />
 				<ApolloWrapper>{children}</ApolloWrapper>
+				<ToastContainer
+					position="bottom-center"
+					autoClose={5000}
+					hideProgressBar={false}
+					newestOnTop={false}
+					closeOnClick={false}
+					rtl={false}
+					pauseOnFocusLoss
+					draggable
+					pauseOnHover
+					theme="light"
+					// transition={Bounce}
+				/>
 				<Footer />
 			</body>
 		</html>

@@ -5,13 +5,13 @@ const telefono = "13213306424";
 
 const Footer = () => {
 	return (
-		<footer className="bg-fondo p-6 grid-col-3">
+		<footer className="bg-primary p-6 grid-col-3">
 			<div className="grid grid-cols-1 lg:grid-cols-3 lg:space-y-0 pb-8 md:pb-16 gap-7 lg:gap-20 place-items-start ">
-				<div className="w-3/5">
+				<div className="w-3/12">
 					<Image
-						src="/image/logo-monarca.png"
+						src="/image/via.svg"
 						alt="Logo"
-						width={384}
+						width={284}
 						height={126}
 						priority
 					/>

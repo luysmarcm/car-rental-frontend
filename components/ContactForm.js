@@ -127,7 +127,7 @@ export default function ContactForm() {
 						htmlFor="message"
 						className="block text-sm font-medium text-gray-700"
 					>
-						Mensaje
+						Message
 					</label>
 					<textarea
 						id="message"
@@ -135,7 +135,7 @@ export default function ContactForm() {
 						value={formData.message}
 						onChange={handleChange}
 						rows="4"
-						className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
+						className="mt-1 block w-full p-2 border border-gray-300 rounded-4xl shadow-sm"
 						required
 					></textarea>
 				</div>

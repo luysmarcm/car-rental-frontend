@@ -23,7 +23,7 @@ export default function HeroSection() {
 						<span className="text-sm text-gray-500">@viacarrentaltpa</span>
 					</div> */}
 
-					<h1 className="text-4xl md:text-5xl font-semibold leading-tight mt-6">
+					<h1 className="text-2xl md:text-5xl font-semibold leading-tight mt-6">
 						<span className="text-gray-700">Rent </span>
 						<span className="text-blue-700 font-bold">Your Ride, </span>
 						<span className="text-blue-900 font-bold">Own the Road</span>

@@ -4,8 +4,8 @@
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Re } from "./Re";
-import BookingForm from "./BookingForm";
+import BookingForm from "../BookingForm";
+import GetQuote from "../GetQuote";
 
 const carImages = [
 	"/image/carro2.png",
@@ -24,19 +24,17 @@ export default function Hero() {
 	}, []);
 
 	return (
-		<section className="">
-			<div className="relative min-h-screen flex flex-col md:flex-row">
-				<div className="relative flex items-center justify-center">
+		<section className="relative w-full overflow-hidden">
+			<div className="relative min-h-screen flex flex-col lg:flex-row">
+				<div className="relative w-full lg:w-1/2 min-h-[50vh] lg:min-h-screen flex items-center justify-center p-4 md:p-8">
 					<Image
 						src="/image/banner.png"
 						alt="Fondo"
-						width={800}
-						height={600}
-						className="absolute inset-0 w-full h-full z-0 opacity-80"
+						width={1000}
+						height={750}
+						className="absolute inset-0 w-full h-full z-0 opacity-80 object-cover"
 					/>
-
-					{/* Autos animados */}
-					<div className="relative w-[600px] h-[400px] z-10">
+					<div className="relative w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl aspect-video z-10">
 						<AnimatePresence mode="wait">
 							<motion.div
 								key={carImages[index]}
@@ -58,21 +56,23 @@ export default function Hero() {
 					</div>
 				</div>
 
-				{/* Parte derecha con texto */}
-				<div className="flex-grow flex flex-col items-center justify-center text-center p-8 ">
-					<h1 className="text-6xl font-bold text-black leading-tight  italic ">
+				<div className="flex-grow w-full lg:w-1/2 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-16">
+					<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight italic mb-2">
 						Rent <span className="text-secondary"> Your Ride,</span>
 					</h1>
-					<h2 className="text-7xl font-extrabold text-secondary italic ">
+					<h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-secondary italic mb-4">
 						Own the Road
 					</h2>
-					<p className="text-2xl text-gray-600 italic ">
+					<p className="text-lg md:text-xl lg:text-2xl text-gray-600 italic max-w-md mx-auto">
 						Fast booking flexible options
 					</p>
 				</div>
 			</div>
-			<div className="absolute top-[calc(100vh-200px)] left-1/2 transform -translate-x-1/2 w-full p-8 rounded-t-lg z-20">
-				{/* Esto lo pondría 200px por encima del fondo de la ventana (aproximadamente) */}
+			{/* <div className="lg:absolute lg:bottom-0 lg:left-1/2 transform lg:-translate-x-1/2 translate-y-8 w-full max-w-8xl p-4 md:p-8  lg:rounded-t-lg z-20">
+				<BookingForm />
+				
+			</div> */}
+			<div className="relative  ">
 				<BookingForm />
 			</div>
 		</section>
