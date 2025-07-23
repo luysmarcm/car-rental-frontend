@@ -5,17 +5,19 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import BookingForm from "../BookingForm";
-import GetQuote from "../GetQuote";
 
 const carImages = [
 	"/image/carro2.png",
-	"/image/carro1.png", // agrega más si deseas
+	"/image/carro1.png",
+	// puedes agregar más imágenes aquí
 ];
 
 export default function Hero() {
 	const [index, setIndex] = useState(0);
 
 	useEffect(() => {
+		if (carImages.length === 0) return;
+
 		const interval = setInterval(() => {
 			setIndex((prev) => (prev + 1) % carImages.length);
 		}, 4000);
@@ -23,15 +25,16 @@ export default function Hero() {
 		return () => clearInterval(interval);
 	}, []);
 
+	if (carImages.length === 0) return null;
+
 	return (
-		<section className="relative w-full overflow-hidden">
+		<section className="relative">
 			<div className="relative min-h-screen flex flex-col lg:flex-row">
 				<div className="relative w-full lg:w-1/2 min-h-[50vh] lg:min-h-screen flex items-center justify-center p-4 md:p-8">
 					<Image
 						src="/image/banner.png"
 						alt="Fondo"
-						width={1000}
-						height={750}
+						fill
 						className="absolute inset-0 w-full h-full z-0 opacity-80 object-cover"
 					/>
 					<div className="relative w-full max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl aspect-video z-10">
@@ -49,16 +52,15 @@ export default function Hero() {
 									alt={`Auto ${index + 1}`}
 									fill
 									className="object-contain"
-									priority
 								/>
 							</motion.div>
 						</AnimatePresence>
 					</div>
 				</div>
 
-				<div className="flex-grow w-full lg:w-1/2 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-16">
+				<div className="w-full lg:w-1/2 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-16">
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight italic mb-2">
-						Rent <span className="text-secondary"> Your Ride,</span>
+						Rent <span className="text-secondary">Your Ride,</span>
 					</h1>
 					<h2 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-secondary italic mb-4">
 						Own the Road
@@ -68,11 +70,8 @@ export default function Hero() {
 					</p>
 				</div>
 			</div>
-			{/* <div className="lg:absolute lg:bottom-0 lg:left-1/2 transform lg:-translate-x-1/2 translate-y-8 w-full max-w-8xl p-4 md:p-8  lg:rounded-t-lg z-20">
-				<BookingForm />
-				
-			</div> */}
-			<div className="relative  ">
+
+			<div className="relative -mt-24 lg:-mt-32">
 				<BookingForm />
 			</div>
 		</section>

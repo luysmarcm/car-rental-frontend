@@ -24,19 +24,14 @@ export default function Testimonials() {
 				<span className="text-primary italic">best option</span>
 			</h2>
 
-			<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+			<div className="grid grid-cols-1 md:grid-cols-3 gap-8 place-content-stretch p-7 ">
 				{testimonials.map((item, idx) => (
-					// CARD CONTAINER
 					<div
 						key={idx}
-						className="bg-gray-100 p-6 rounded-xl rounded-l-3xl shadow-sm flex flex-col items-start text-left relative pl-16 md:pl-20 pr-4 py-8" // Ajustado padding y alineación
+						className="bg-gray-100 p-6 rounded-xl rounded-l-3xl shadow-sm flex flex-col items-start text-left relative pl-16 md:pl-20 pr-4 py-8"
 					>
-						{/* IMAGE CONTAINER - Posicionado Absolutamente */}
 						<div className="absolute top-1/2 transform -translate-y-1/2 -left-10 md:-left-12 z-10">
-							{" "}
-							{/* Posicionamiento flotante */}
-							{/* Usamos un SVG placeholder para el icono de usuario */}
-							<div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-blue-900 flex items-center justify-center shadow-md border-4 border-white">
+							<div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-secondary flex items-center justify-center shadow-md border-4 border-white">
 								<svg
 									className="w-10 h-10 md:w-12 md:h-12 text-white"
 									fill="currentColor"
@@ -50,22 +45,12 @@ export default function Testimonials() {
 									/>
 								</svg>
 							</div>
-							{/* Si quieres usar una imagen real de usuario en vez del SVG, descomenta y ajusta: */}
-							{/* <Image
-                src={item.image} // Asegúrate de que item.image apunte a un SVG o PNG para el usuario si no es el placeholder
-                alt={`User ${idx + 1}`}
-                width={96} // Equivalente a w-24
-                height={96} // Equivalente a h-24
-                className="rounded-full object-cover border-4 border-blue-900 shadow-md"
-              /> */}
 						</div>
 
-						{/* TESTIMONIAL TEXT */}
 						<p className="italic text-blue-900 mb-4 text-[17px] leading-relaxed">
 							{item.text}
 						</p>
 
-						{/* STARS RATING */}
 						<div className="flex gap-1 text-yellow-500 text-lg">
 							{[...Array(5)].map((_, i) => (
 								<span key={i}>★</span>

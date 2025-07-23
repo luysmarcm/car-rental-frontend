@@ -4,7 +4,10 @@
   --background: #ffffff;
   --foreground: #171717;
 }
-
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
 
 @theme {
   /* Asegúrate de que esta línea esté, es la que expone la variable de next/font a Tailwind */
@@ -16,8 +19,9 @@
   --color-morado: oklch(70.73% 0.117 296.8);   /* #BCA7E8 */
   --color-m2: oklch(47.45% 0.064 274.6);     /* #626ABF */
   --color-fondo: oklch(80.59% 0.021 69.5);    /* #d1c7bd */
-  --color-gris: oklch(84.34% 0.003 270);      /* #D9D9D9 */
+  --color-gris:  oklch(31.71% 0.000 0);      /* #323232 */
   --color-mint-500: oklch(0.72 0.11 178);
+ 
 
   /* Aquí irían otras variables de tema si las quisieras definir en Tailwind v4,
      como colores, spacing, etc.

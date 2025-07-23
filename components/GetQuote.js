@@ -7,7 +7,7 @@ const GetQuote = () => {
 
 	return (
 		<div className="flex flex-col space-y-4">
-			<button
+			<button	
 				className="rounded-full text-white font-bold bg-primary py-3 p-3 hover:bg-secundary"
 				onClick={() => setIsModalOpen(true)} // This will open the modal
 			>

@@ -4,31 +4,44 @@
 import { useState } from "react";
 import { useQuery } from "@apollo/client";
 import { GET_CARS } from "@/lib/graphql/cars";
-import CarCard from "./CarCard";
+import CarCard from "./CarCard"; 
 import { motion, AnimatePresence } from "framer-motion";
 import CarModal from "./CarModal";
 
 export default function CarDisplaySection() {
 	const [currentIndex, setCurrentIndex] = useState(0);
-	const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
-	const [selectedCar, setSelectedCar] = useState(null); // Estado para el carro seleccionado en el modal
+	const [showModal, setShowModal] = useState(false);
+	const [selectedCar, setSelectedCar] = useState(null);
 
 	const { data, loading, error } = useQuery(GET_CARS, {
 		variables: {
 			filters: {
 				available: {
-					eq: true, // Filtrar solo carros disponibles
+					eq: true, 
 				},
 			},
 		},
 	});
 
-	if (loading)
+	// Si está cargando, mostramos el skeleton de la CarCard y los botones de navegación
+	if (loading) {
 		return (
-			<p className="text-center text-lg text-gray-700">
-				Cargando carros disponibles...
-			</p>
+			<div className="relative w-full py-16 px-4">
+				<div className="relative flex items-center justify-center">
+					{/* Skeleton para el botón de navegación izquierda */}
+					<div className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full shadow-md animate-pulse"></div>
+					<div className="w-full flex justify-center">
+						{/* Renderiza el CarCard en estado de carga */}
+						<CarCard isLoading={true} />
+					</div>
+					{/* Skeleton para el botón de navegación derecha */}
+					<div className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 flex items-center justify-center bg-gray-200 rounded-full shadow-md animate-pulse"></div>
+				</div>
+			</div>
 		);
+	}
+
+	// Manejo de errores
 	if (error)
 		return (
 			<p className="text-center text-lg text-red-600">
@@ -39,6 +52,7 @@ export default function CarDisplaySection() {
 	const cars = data?.cars || [];
 	console.log("Cars data:", cars);
 
+	// Si no hay carros disponibles después de la carga
 	if (cars.length === 0) {
 		return (
 			<p className="text-center text-lg text-gray-700">
@@ -106,7 +120,7 @@ export default function CarDisplaySection() {
 							transition={{ duration: 0.3 }}
 							className="w-full flex justify-center"
 						>
-							{/* Pasamos la función openModal a CarCard */}
+							{/* Pasamos la función openModal a CarCard y isLoading es false por defecto */}
 							<CarCard car={currentCar} onCarClick={openModal} />
 						</motion.div>
 					)}

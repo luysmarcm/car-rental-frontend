@@ -1,0 +1,21 @@
+# Ignora dependencias locales (serán instaladas en el contenedor)
+node_modules
+
+# Archivos de entorno locales
+.env
+.env.local
+.env.production
+.env.development
+
+# Archivos de Git
+.git
+.gitignore
+
+# Archivos de build temporales de Next.js (no necesarios en la build inicial)
+.next
+out
+
+# Logs
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
