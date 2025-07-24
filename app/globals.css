@@ -7,7 +7,10 @@
 html, body {
   height: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
+
+
 
 @theme {
   /* Asegúrate de que esta línea esté, es la que expone la variable de next/font a Tailwind */

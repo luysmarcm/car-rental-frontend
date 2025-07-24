@@ -84,7 +84,7 @@ export default function CarDisplaySection() {
 	};
 
 	return (
-		<div className=" relative w-full py-16 px-4">
+		<div id="vehicles" className=" relative w-full py-16 px-4">
 			<div className="relative flex items-center justify-center">
 				{/* Botón de navegación izquierda */}
 				<motion.button

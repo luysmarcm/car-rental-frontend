@@ -9,22 +9,22 @@ export default function Navbar() {
 	const links = [
 		{
 			name: "Home",
-			href: "https://www.linkedin.com/in/luysmarcm",
+			href: "#reserva",
 			current: false,
 		},
 		{
 			name: "Reserve",
-			href: "https://github.com/luysmarcm",
+			href: "#reserva",
 			current: false,
 		},
 		{
 			name: "About",
-			href: "https://behance.net/luysmarcm",
+			href: "#about",
 			current: false,
 		},
 		{
 			name: "Vehicles",
-			href: "https://behance.net/luysmarcm",
+			href: "#vehicles",
 			current: false,
 		},
 	];
@@ -94,18 +94,18 @@ export default function Navbar() {
 							<Link
 								key={link.name}
 								href={link.href}
-								className="px-3 py-2 rounded-md text-sm lg:text-base uppercase font-extrabold text-secondary hover:text-white transition-colors duration-200"
+								className="px-3 py-2 rounded-md text-sm lg:text-base uppercase font-extrabold text-gris hover:text-secondary transition-colors duration-200"
 							>
 								{link.name}
 							</Link>
 						))}
 					</div>
 					{/* Botón de Contacto para Desktop */}
-					<Link href="/contact" passHref>
+					<Link href="#contact" passHref>
 						{" "}
 						{/* Asume una página de contacto, cambia la href si es diferente */}
-						<button className="rounded-full font-light text-white bg-secondary px-4 py-1 hover:bg-morado text-sm transition-colors duration-200">
-							Contact
+						<button className="rounded-full font-extrabold text-white bg-secondary px-4 py-1 hover:bg-gris text-sm transition-colors duration-200">
+							CONTACT
 						</button>
 					</Link>
 				</div>

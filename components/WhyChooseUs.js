@@ -31,7 +31,10 @@ export default function WhyChooseUs() {
 	];
 
 	return (
-		<section className="py-16 px-4 md:px-8 lg:px-20 bg-white text-center">
+		<section
+			id="about"
+			className="py-16 px-4 md:px-8 lg:px-20 bg-white text-center"
+		>
 			<h2 className="text-4xl sm:text-4xl font-extrabold lg:text-7xl text-secondary text-center mb-10 sm:mb-12 lg:mb-16">
 				Why choose us?
 			</h2>

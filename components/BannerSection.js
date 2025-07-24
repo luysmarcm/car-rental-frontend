@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function BannerSection() {
 	return (
@@ -24,10 +25,11 @@ export default function BannerSection() {
 						on four wheels
 					</span>
 				</h1>
-
-				<button className="mt-8 px-8 py-3 bg-white text-secondary	 font-bold rounded-full shadow-lg hover:bg-gray-200 transition duration-300 text-lg sm:text-xl transform hover:scale-105">
-					BOOK NOW
-				</button>
+				<Link href="#reserva" passHref>
+					<button className="mt-8 px-8 py-3 bg-white text-secondary	 font-bold rounded-full shadow-lg hover:bg-gray-200 transition duration-300 text-lg sm:text-xl transform hover:scale-105">
+						BOOK NOW
+					</button>
+				</Link>
 			</div>
 
 			{/* Icono de Instagram en la esquina superior derecha */}

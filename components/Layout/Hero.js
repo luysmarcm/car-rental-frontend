@@ -7,8 +7,12 @@ import { useState, useEffect } from "react";
 import BookingForm from "../BookingForm";
 
 const carImages = [
-	"/image/carro2.png",
-	"/image/carro1.png",
+	"/image/Camry.png",
+	"/image/Corolla.png",
+	"/image/Elantra.png",
+	"/image/GMC-terrain.png",
+	"/image/Jeep compass.png",
+	"/image/Nissan Sentra 1.png",
 	// puedes agregar más imágenes aquí
 ];
 
@@ -28,7 +32,7 @@ export default function Hero() {
 	if (carImages.length === 0) return null;
 
 	return (
-		<section className="relative">
+		<section id="reserva" className="relative">
 			<div className="relative min-h-screen flex flex-col lg:flex-row">
 				<div className="relative w-full lg:w-1/2 min-h-[50vh] lg:min-h-screen flex items-center justify-center p-4 md:p-8">
 					<Image
@@ -71,7 +75,7 @@ export default function Hero() {
 				</div>
 			</div>
 
-			<div className="relative -mt-24 lg:-mt-32">
+			<div className="relative -mt-28 lg:-mt-32">
 				<BookingForm />
 			</div>
 		</section>
