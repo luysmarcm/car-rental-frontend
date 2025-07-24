@@ -136,7 +136,7 @@ export default function Navbar() {
 							className="mt-4 rounded-full font-light text-white bg-secondary px-6 py-2 hover:bg-morado text-base w-fit transition-colors duration-200"
 							onClick={() => setIsOpen(false)} // Cierra el menú al hacer clic en el botón
 						>
-							Contact
+							CONTACT
 						</button>
 					</Link>
 				</div>

@@ -3,34 +3,23 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react"; // Necesario para el estado de la imagen seleccionada en la galería
+import { useState } from "react"; 
+import { CircleX } from "lucide-react";
 
-// loaderProp se puede eliminar si confías en la optimización de Next.js
-// y configuraste `remotePatterns` en `next.config.js`.
-// Si tienes casos de uso específicos para un loader custom, mantenlo.
 const loaderProp = ({ src }) => {
 	return src;
 };
 
-// baseUrl ya no es necesario aquí para las imágenes de Cloudinary
-// const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1337";
+
 
 const CarModal = ({ car, onClose }) => {
-	// La URL de Cloudinary ya es completa. No necesitamos strapiBaseUrl para imágenes.
-	// Solo se usa para imágenes alojadas directamente en Strapi (que no es el caso de Cloudinary).
-	// const strapiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
-
-	// Manejar la imagen principal y la galería
-	// Verificar si car.photos existe y no está vacío
 	const hasMultiplePhotos = Array.isArray(car?.photos) && car.photos.length > 0;
-
-	// Obtener todas las URLs de las fotos, incluyendo la imagen principal como primera opción
 	const allPhotoUrls = [];
 	if (car?.image?.url) {
-		allPhotoUrls.push({ url: car.image.url, id: "main" }); // Añade la imagen principal
+		allPhotoUrls.push({ url: car.image.url, id: "main" });
 	}
 	if (hasMultiplePhotos) {
-		// Asumiendo que cada elemento en car.photos también tiene una propiedad 'url'
+		
 		car.photos.forEach((photo, index) => {
 			if (photo.url) {
 				allPhotoUrls.push({
@@ -41,16 +30,12 @@ const CarModal = ({ car, onClose }) => {
 		});
 	}
 
-	// Estado para la imagen que se muestra actualmente en el modal (útil para la galería)
 	const [currentImage, setCurrentImage] = useState(
 		allPhotoUrls.length > 0 ? allPhotoUrls[0].url : "/car-image-placeholder.png"
 	);
 
-	// Si car.image.url es de Cloudinary, es directa. Si no, necesitaría strapiBaseUrl.
-	// Asumimos que car.image.url y car.photos[i].url ya son URLs completas de Cloudinary.
 	const imageAlt = `${car?.brand || ""} ${car?.name || "Carro"}`;
 
-	// Defined features with image paths directly
 	const features = [
 		{ label: "Bluetooth", iconPath: "/image/bl.png", key: "bluetooth" },
 		{ label: "Automatic", iconPath: "/image/au.png", key: "gear_shift" },
@@ -86,7 +71,7 @@ const CarModal = ({ car, onClose }) => {
 	return (
 		<AnimatePresence>
 			<motion.div
-				className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4" // Fondo oscuro
+				className="fixed inset-0 bg-opacity-70 flex justify-center items-center z-50 p-4" // Fondo oscuro
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				exit={{ opacity: 0 }}
@@ -103,27 +88,25 @@ const CarModal = ({ car, onClose }) => {
 					{/* Close button */}
 					<button
 						onClick={onClose}
-						className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold p-1 rounded-full bg-gray-100 hover:bg-gray-200"
+						className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold p-1 rounded-full  hover:bg-primary"
 						aria-label="Cerrar modal"
 					>
-						&times;
+						<CircleX className="text-secondary" />
 					</button>
 
 					<div className="flex flex-col md:flex-row gap-6">
-						{/* Sección de la imagen principal / galería */}
 						<div className="md:w-1/2 flex flex-col items-center">
-							<div className="w-full bg-gray-50 rounded-lg p-4 flex justify-center items-center mb-4 min-h-[250px] relative">
+							<div className="w-full rounded-lg p-4 flex justify-center items-center mb-4 min-h-[250px] relative">
 								<Image
-									src={currentImage} // Usar la imagen actualmente seleccionada
+									src={currentImage}
 									alt={imageAlt}
-									layout="fill" // Usar layout="fill" para ocupar el contenedor
+									layout="fill"
 									objectFit="contain"
 									className="rounded-lg"
-									loader={loaderProp} // Opcional, si lo necesitas
+									loader={loaderProp}
 								/>
 							</div>
 
-							{/* Galería de miniaturas */}
 							{allPhotoUrls.length > 1 && (
 								<div className="grid grid-cols-3 sm:grid-cols-4 gap-2 w-full max-w-md">
 									{allPhotoUrls.map((photo) => (
@@ -140,9 +123,9 @@ const CarModal = ({ car, onClose }) => {
 												src={photo.url}
 												alt={`Thumbnail of ${imageAlt}`}
 												layout="fill"
-												objectFit="cover" // cover para miniaturas para que se vean bien
+												objectFit="cover"
 												className="rounded-lg"
-												loader={loaderProp} // Opcional
+												loader={loaderProp}
 											/>
 										</div>
 									))}
@@ -150,7 +133,6 @@ const CarModal = ({ car, onClose }) => {
 							)}
 						</div>
 
-						{/* Detalles del carro */}
 						<div className="md:w-1/2">
 							<h2 className="text-3xl font-bold text-secondary mb-2">
 								{car.brand} {car.name}

@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import BookingForm from "../BookingForm";
+import Booking from "./Booking";
 
 const carImages = [
 	"/image/Camry.png",
@@ -16,9 +16,8 @@ const carImages = [
 	// puedes agregar más imágenes aquí
 ];
 
-export default function Hero() {
+export default function HeroSection() {
 	const [index, setIndex] = useState(0);
-
 	useEffect(() => {
 		if (carImages.length === 0) return;
 
@@ -30,7 +29,6 @@ export default function Hero() {
 	}, []);
 
 	if (carImages.length === 0) return null;
-
 	return (
 		<section id="reserva" className="relative">
 			<div className="relative min-h-screen flex flex-col lg:flex-row">
@@ -61,7 +59,6 @@ export default function Hero() {
 						</AnimatePresence>
 					</div>
 				</div>
-
 				<div className="w-full lg:w-1/2 flex flex-col items-center justify-center text-center p-8 md:p-12 lg:p-16">
 					<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight italic mb-2">
 						Rent <span className="text-secondary">Your Ride,</span>
@@ -74,9 +71,8 @@ export default function Hero() {
 					</p>
 				</div>
 			</div>
-
 			<div className="relative -mt-28 lg:-mt-32">
-				<BookingForm />
+				<Booking />
 			</div>
 		</section>
 	);

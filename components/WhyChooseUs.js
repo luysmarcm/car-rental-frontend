@@ -1,4 +1,8 @@
+"use client";
 import Image from "next/image";
+import { motion } from "framer-motion"; // Importa motion
+import { use } from "react";
+import { CardChoose } from "./CardChoose";
 
 export default function WhyChooseUs() {
 	const features = [
@@ -30,49 +34,40 @@ export default function WhyChooseUs() {
 		},
 	];
 
+	const sectionVariants = {
+        hidden: { opacity: 0, y: 100 }, // Estado inicial: invisible y 100px abajo
+        visible: {
+            opacity: 1,
+            y: 0, // Estado final: visible y en su posición original
+            transition: {
+                duration: 0.8, // Duración de la animación
+                ease: "easeOut", // Tipo de easing
+                when: "beforeChildren", // Anima la sección antes que sus hijos
+                staggerChildren: 0.2 // Opcional: si quieres que las CardChoose aparezcan una tras otra
+            },
+        },
+    };
+	
+
 	return (
-		<section
+		<motion.section
 			id="about"
 			className="py-16 px-4 md:px-8 lg:px-20 bg-white text-center"
+			variants={sectionVariants} // Asigna las variantes
+			initial="hidden" // Establece el estado inicial
+			whileInView="visible" // Anima a 'visible' cuando el componente entra en el viewport
+			viewport={{ once: true, amount: 0.2 }} // Anima solo una vez cuando el 20% del componente está visible
+		
 		>
 			<h2 className="text-4xl sm:text-4xl font-extrabold lg:text-7xl text-secondary text-center mb-10 sm:mb-12 lg:mb-16">
 				Why choose us?
 			</h2>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-12 w-full items-stretch justify-items-center">
-				{features.map((feature, idx) => {
-					// Centrar las dos últimas tarjetas si hay 5
-					const isLastRow =
-						features.length % 3 === 2 && idx >= features.length - 2;
-
-					return (
-						<div
-							key={idx}
-							className={`bg-gray-100 rounded-xl p-6 sm:p-8 shadow-md flex flex-col items-center relative pt-16 h-full w-full  lg:min-h-[100px] ${
-								isLastRow ? "lg:col-span-1" : ""
-							}`}
-						>
-							<div
-								className="absolute -top-10 flex justify-center items-center h-20 w-20 sm:h-24 sm:w-24 rounded-full z-10 border-4 border-white"
-								style={{ left: "50%", transform: "translateX(-50%)" }}
-							>
-								<Image
-									src={feature.imageSrc}
-									alt={feature.title}
-									width={100}
-									height={100}
-								/>
-							</div>
-							<h3 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-4 lg:mt-10">
-								{feature.title}
-							</h3>
-							<p className="text-gray-600 text-lg sm:text-xl italic grow text-center">
-								{feature.description}
-							</p>
-						</div>
-					);
-				})}
+				{features.map((feature, index) => (
+					<CardChoose feature={feature} key={index} />
+				))}
 			</div>
-		</section>
+		</motion.section>
 	);
 }
