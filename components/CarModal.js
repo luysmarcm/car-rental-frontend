@@ -134,7 +134,7 @@ const CarModal = ({ car, onClose }) => {
 						</div>
 
 						<div className="md:w-1/2">
-							<h2 className="text-3xl font-bold text-secondary mb-2">
+							<h2 className="text-3xl font-bold text-secondary mb-2 uppercase">
 								{car.brand} {car.name}
 							</h2>
 

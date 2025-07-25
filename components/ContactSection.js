@@ -214,7 +214,7 @@ export default function ContactSection() {
 							</button>
 						</div>
 					</form>
-					<div className="flex flex-col sm:flex-row items-center place-content-around text-sm py-5">
+					<div className="flex flex-col sm:flex-row items-center place-content-around text-sm py-5 gap-5">
 						<div className="flex items-center bg-white bg-opacity-80 rounded-full py-2 px-4 shadow-md">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
@@ -239,7 +239,7 @@ export default function ContactSection() {
 						<div className="flex items-center bg-white bg-opacity-80 rounded-full py-2 px-4 shadow-md">
 							<Mail className="feather feather-instagram text-secondary	 mr-2" />
 							<span className="text-secondary font-semibold text-sm">
-								viatpareservation@gmail.com
+								viacarrental21@gmail.com
 							</span>
 						</div>
 					</div>

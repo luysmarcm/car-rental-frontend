@@ -1,3 +1,4 @@
+// components/FormBooking.jsx (or wherever your component is located)
 "use client";
 import React from "react";
 import { useMutation, useQuery } from "@apollo/client";
@@ -8,256 +9,279 @@ import { CREATE_CUSTOMER } from "@/lib/graphql/customers";
 import { MapPin, CalendarSearch, Clock9, ChevronDown } from "lucide-react";
 import { toast } from "react-toastify";
 
+// Import your server actions
+import {
+	sendCustomerConfirmationEmail,
+	sendAdminNotificationEmail,
+} from "@/lib/actions";
+
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 const FormBooking = () => {
 	const today = new Date().toISOString().slice(0, 10);
 	const [reservationFormData, setReservationFormData] = useState({
-			pickup_date: today,
-			pickup_time: "10:00",
-			dropoff_date: today,
-			dropoff_time: "10:00",
-			location: "",
-			selectedTypeId: "", 
-			totalPrice: 0,
-		});
-	
-		const [clientFormData, setClientFormData] = useState({
-			first_name: "",
-			last_name: "",
-			email: "",
-			phone: "",
-			driver_age: "", 
-		});
-	
-		const [showClientModal, setShowClientModal] = useState(false);
-		const [dateValidationError, setDateValidationError] = useState(null);
-		const {
-			data: carTypesData,
-			loading: carTypesLoading,
-			error: carTypesError,
-		} = useQuery(GET_CAR_TYPES);
-	
-		const [
-			createReservation,
-			{ loading: reservationLoading, error: reservationError },
-		] = useMutation(CREATE_RESERVATION);
-	
-		const [createCustomer, { loading: customerLoading, error: customerError }] =
-			useMutation(CREATE_CUSTOMER);
-	
-		const handleReservationChange = (e) => {
-			const { name, value } = e.target;
-			setReservationFormData((prev) => ({ ...prev, [name]: value }));
-		};
-	
-		const handleClientChange = (e) => {
-			const { name, value } = e.target;
-			setClientFormData((prev) => ({ ...prev, [name]: value }));
-		};
-	
-		const formatTimeToMilliseconds = (timeStr) => {
-			if (!timeStr) {
-				return null;
-			}
-			const parts = timeStr.split(":");
-			if (parts.length === 2 && parts[0].length === 2 && parts[1].length === 2) {
-				return `${timeStr}:00.000`;
-			}
-			return timeStr;
-		};
-	
-		
-		useEffect(() => {
-			const { pickup_date, dropoff_date, selectedTypeId } = reservationFormData;
-	
-			if (
-				!pickup_date ||
-				!dropoff_date ||
-				!selectedTypeId || 
-				!carTypesData ||
-				carTypesLoading
-			) {
-				setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
-				setDateValidationError(null);
-				return;
-			}
-	
-			const pickupDateObj = new Date(pickup_date);
-			const dropoffDateObj = new Date(dropoff_date);
-	
-			if (dropoffDateObj < pickupDateObj) {
-				setDateValidationError(
-					"La fecha de regreso no puede ser anterior a la fecha de inicio."
-				);
-				setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
-				return;
-			} else {
-				setDateValidationError(null);
-			}
-	
-			const selectedCarType = carTypesData.types.find(
-				(type) => type.documentId === selectedTypeId
+		pickup_date: today,
+		pickup_time: "10:00",
+		dropoff_date: today,
+		dropoff_time: "10:00",
+		location: "",
+		selectedTypeId: "",
+		totalPrice: 0,
+	});
+
+	const [clientFormData, setClientFormData] = useState({
+		first_name: "",
+		last_name: "",
+		email: "",
+		phone: "",
+		driver_age: "",
+	});
+
+	const [showClientModal, setShowClientModal] = useState(false);
+	const [dateValidationError, setDateValidationError] = useState(null);
+	const {
+		data: carTypesData,
+		loading: carTypesLoading,
+		error: carTypesError,
+	} = useQuery(GET_CAR_TYPES);
+
+	const [
+		createReservation,
+		{ loading: reservationLoading, error: reservationError },
+	] = useMutation(CREATE_RESERVATION);
+
+	const [createCustomer, { loading: customerLoading, error: customerError }] =
+		useMutation(CREATE_CUSTOMER);
+
+	const handleReservationChange = (e) => {
+		const { name, value } = e.target;
+		setReservationFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const handleClientChange = (e) => {
+		const { name, value } = e.target;
+		setClientFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const formatTimeToMilliseconds = (timeStr) => {
+		if (!timeStr) {
+			return null;
+		}
+		const parts = timeStr.split(":");
+		if (parts.length === 2 && parts[0].length === 2 && parts[1].length === 2) {
+			return `${timeStr}:00.000`;
+		}
+		return timeStr;
+	};
+
+	useEffect(() => {
+		const { pickup_date, dropoff_date, selectedTypeId } = reservationFormData;
+
+		if (
+			!pickup_date ||
+			!dropoff_date ||
+			!selectedTypeId ||
+			!carTypesData ||
+			carTypesLoading
+		) {
+			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			setDateValidationError(null);
+			return;
+		}
+
+		const pickupDateObj = new Date(pickup_date);
+		const dropoffDateObj = new Date(dropoff_date);
+
+		if (dropoffDateObj < pickupDateObj) {
+			setDateValidationError(
+				"La fecha de regreso no puede ser anterior a la fecha de inicio."
 			);
-	
-			if (!selectedCarType) {
-				setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
-				return;
-			}
-	
-			const pricePerDay = selectedCarType.price; 
-	
-			const timeDiff = dropoffDateObj.getTime() - pickupDateObj.getTime();
-			let numberOfDays = Math.round(timeDiff / MS_PER_DAY);
-	
-		
-			if (numberOfDays === 0) {
-				numberOfDays = 1;
-			} else {
-				numberOfDays += 1; 
-			}
-	
-			const calculatedTotalPrice = numberOfDays * pricePerDay;
-			setReservationFormData((prev) => ({
-				...prev,
-				totalPrice: calculatedTotalPrice,
-			}));
-		}, [
-			reservationFormData.pickup_date,
-			reservationFormData.dropoff_date,
-			reservationFormData.selectedTypeId,
-			carTypesData,
-			carTypesLoading,
-		]);
-	
-		const handleInitialSubmit = async (e) => {
-			e.preventDefault();
-	
-			
-			if (
-				!reservationFormData.location ||
-				!reservationFormData.pickup_date ||
-				!reservationFormData.dropoff_date
-			) {
-				toast.error(
-					"Por favor, completa la ubicación y las fechas de recogida/devolución."
-				);
-				return;
-			}
-	
-			if (dateValidationError) {
-				toast.error(dateValidationError);
-				return;
-			}
-	
-			
-			setShowClientModal(true);
-		};
+			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			return;
+		} else {
+			setDateValidationError(null);
+		}
 
-		const handleClientSubmit = async (e) => {
-			e.preventDefault();
-	
-			
-			if (
-				!clientFormData.first_name ||
-				!clientFormData.last_name ||
-				!clientFormData.email ||
-				!clientFormData.driver_age // 
-			) {
-				toast.error(
-					"Por favor, completa todos los campos requeridos del cliente (Nombre, Apellido, Email, Edad del Conductor)."
-				);
-				return;
-			}
-	
-			if (!reservationFormData.selectedTypeId) {
-				toast.error("Por favor, selecciona un tipo de vehículo.");
-				return;
-			}
-	
-			if (reservationFormData.totalPrice <= 0) {
-				toast.error(
-					"El precio total no se pudo calcular. Por favor, verifica las fechas y el tipo de carro seleccionado."
-				);
-				return;
-			}
-	
-			try {
-				
-				console.log(
-					"Datos del cliente que se enviarán a Strapi (CREATE_CUSTOMER):",
-					clientFormData
-				);
-				const customerResponse = await createCustomer({
-					variables: {
-						data: clientFormData,
-					},
-				});
-	
-				const customerDocumentId =
-					customerResponse.data.createCustomer.documentId;
-				console.log(
-					"documentId del cliente creado (obtenido de la respuesta de Strapi):",
-					customerDocumentId
-				);
-	
-				const formattedPickupTime = formatTimeToMilliseconds(
-					reservationFormData.pickup_time
-				);
-				const formattedDropoffTime = formatTimeToMilliseconds(
-					reservationFormData.dropoff_time
-				);
+		const selectedCarType = carTypesData.types.find(
+			(type) => type.documentId === selectedTypeId
+		);
 
-				const reservationInputData = {
-					pickup_date: reservationFormData.pickup_date,
-					pickup_time: formattedPickupTime,
-					dropoff_date: reservationFormData.dropoff_date,
-					dropoff_time: formattedDropoffTime,
-					location: reservationFormData.location,
-					type: reservationFormData.selectedTypeId, 
-					total_price: reservationFormData.totalPrice,
-					customer: customerDocumentId,
-				};
-	
-				console.log(
-					"Datos de la reserva que se enviarán a Strapi (CREATE_RESERVATION):",
-					reservationInputData
-				);
-	
-				await createReservation({
-					variables: {
-						data: reservationInputData,
-					},
-				});
-	
-				toast.success("Geat, you're booked!"); // Notificación de éxito
-	
-				setShowClientModal(false);
-				setReservationFormData({
-					pickup_date: "",
-					pickup_time: "10:00",
-					dropoff_date: "",
-					dropoff_time: "10:00",
-					location: "",
-					selectedTypeId: "",
-					totalPrice: 0,
-				});
-				setClientFormData({
-					first_name: "",
-					last_name: "",
-					email: "",
-					phone: "",
-					driver_age: "", 
-				});
-			} catch (err) {
-				console.error("Error", err);
-				const errorMessage =
-					customerError?.message || reservationError?.message || err.message;
-				toast.error(`Error: ${errorMessage}`);
-			}
-		};
-	
-		const isFormLoading = reservationLoading || customerLoading;
+		if (!selectedCarType) {
+			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			return;
+		}
+
+		const pricePerDay = selectedCarType.price;
+
+		const timeDiff = dropoffDateObj.getTime() - pickupDateObj.getTime();
+		let numberOfDays = Math.round(timeDiff / MS_PER_DAY);
+
+		if (numberOfDays === 0) {
+			numberOfDays = 1;
+		} else {
+			numberOfDays += 1;
+		}
+
+		const calculatedTotalPrice = numberOfDays * pricePerDay;
+		setReservationFormData((prev) => ({
+			...prev,
+			totalPrice: calculatedTotalPrice,
+		}));
+	}, [
+		reservationFormData.pickup_date,
+		reservationFormData.dropoff_date,
+		reservationFormData.selectedTypeId,
+		carTypesData,
+		carTypesLoading,
+	]);
+
+	const handleInitialSubmit = async (e) => {
+		e.preventDefault();
+
+		if (
+			!reservationFormData.location ||
+			!reservationFormData.pickup_date ||
+			!reservationFormData.dropoff_date
+		) {
+			toast.error(
+				"Por favor, completa la ubicación y las fechas de recogida/devolución."
+			);
+			return;
+		}
+
+		if (dateValidationError) {
+			toast.error(dateValidationError);
+			return;
+		}
+
+		setShowClientModal(true);
+	};
+
+	const handleClientSubmit = async (e) => {
+		e.preventDefault();
+
+		if (
+			!clientFormData.first_name ||
+			!clientFormData.last_name ||
+			!clientFormData.email ||
+			!clientFormData.driver_age
+		) {
+			toast.error(
+				"Por favor, completa todos los campos requeridos del cliente (Nombre, Apellido, Email, Edad del Conductor)."
+			);
+			return;
+		}
+
+		if (!reservationFormData.selectedTypeId) {
+			toast.error("Por favor, selecciona un tipo de vehículo.");
+			return;
+		}
+
+		if (reservationFormData.totalPrice <= 0) {
+			toast.error(
+				"El precio total no se pudo calcular. Por favor, verifica las fechas y el tipo de carro seleccionado."
+			);
+			return;
+		}
+
+		try {
+			console.log(
+				"Datos del cliente que se enviarán a Strapi (CREATE_CUSTOMER):",
+				clientFormData
+			);
+			const customerResponse = await createCustomer({
+				variables: {
+					data: clientFormData,
+				},
+			});
+
+			// Extract the full customer object from the response
+			const newCustomer = customerResponse.data.createCustomer;
+			const customerDocumentId = newCustomer.documentId; // Use this for reservation
+
+			console.log(
+				"documentId del cliente creado (obtenido de la respuesta de Strapi):",
+				customerDocumentId
+			);
+
+			const formattedPickupTime = formatTimeToMilliseconds(
+				reservationFormData.pickup_time
+			);
+			const formattedDropoffTime = formatTimeToMilliseconds(
+				reservationFormData.dropoff_time
+			);
+
+			const reservationInputData = {
+				pickup_date: reservationFormData.pickup_date,
+				pickup_time: formattedPickupTime,
+				dropoff_date: reservationFormData.dropoff_date,
+				dropoff_time: formattedDropoffTime,
+				location: reservationFormData.location,
+				type: reservationFormData.selectedTypeId,
+				total_price: reservationFormData.totalPrice,
+				customer: customerDocumentId,
+			};
+
+			console.log(
+				"Datos de la reserva que se enviarán a Strapi (CREATE_RESERVATION):",
+				reservationInputData
+			);
+
+			const reservationResponse = await createReservation({
+				variables: {
+					data: reservationInputData,
+				},
+			});
+
+			// Extract the full reservation object from the response
+			const newReservation = reservationResponse.data.createReservation;
+
+			// Find the selected car type name for email details
+			const selectedCarType = carTypesData.types.find(
+				(car) => car.documentId === newReservation.type.documentId
+			);
+			const carTypeName = selectedCarType ? selectedCarType.name : "N/A";
+
+			// Prepare email details
+			const emailDetails = {
+				customer: newCustomer, // Pass the full customer object
+				reservation: newReservation, // Pass the full reservation object
+				carTypeName: carTypeName,
+				totalPrice: newReservation.total_price, // Use totalPrice from the confirmed reservation
+			};
+
+			// Send emails using the server actions
+			await sendCustomerConfirmationEmail(emailDetails);
+			await sendAdminNotificationEmail(emailDetails);
+
+			toast.success("Great, you're booked! Check your email for confirmation.");
+
+			setShowClientModal(false);
+			setReservationFormData({
+				pickup_date: today, // Reset to today or a default for next booking
+				pickup_time: "10:00",
+				dropoff_date: today, // Reset to today or a default for next booking
+				dropoff_time: "10:00",
+				location: "",
+				selectedTypeId: "",
+				totalPrice: 0,
+			});
+			setClientFormData({
+				first_name: "",
+				last_name: "",
+				email: "",
+				phone: "",
+				driver_age: "",
+			});
+		} catch (err) {
+			console.error("Error during booking process:", err);
+			const errorMessage =
+				customerError?.message || reservationError?.message || err.message;
+			toast.error(`Error: ${errorMessage}`);
+		}
+	};
+
+	const isFormLoading = reservationLoading || customerLoading;
 
 	return (
 		<>
@@ -381,7 +405,7 @@ const FormBooking = () => {
 					<button
 						type="submit" // Este botón ahora solo abre el modal
 						disabled={isFormLoading || dateValidationError}
-						className={`w-full bg-secondary  text-white font-semibold py-3 px-2 rounded-4xl shadow-md transition-colors duration-300 uppercase tracking-wider text-lg ${
+						className={`w-full bg-secondary text-white font-semibold py-3 px-2 rounded-4xl shadow-md transition-colors duration-300 uppercase tracking-wider text-lg ${
 							isFormLoading || dateValidationError
 								? "bg-gray-400 cursor-not-allowed"
 								: "hover:bg-blue-700 hover:bg-gris hover:text-secondary"
