@@ -117,7 +117,10 @@ export default function ContactSection() {
 					<h2 className="text-4xl sm:text-4xl font-extrabold lg:text-7xl text-center mb-10 sm:mb-12 lg:mb-16 text-secondary">
 						CONTACT US
 					</h2>
-					<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+					<form
+						onSubmit={handleSubmit}
+						className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2"
+					>
 						<div>
 							<label
 								htmlFor="name"
@@ -157,7 +160,7 @@ export default function ContactSection() {
 								/>
 							</div>
 						</div>
-						<div>
+						<div className="col-span-full">
 							<label
 								htmlFor="email"
 								className="text-black text-sm font-semibold"
@@ -178,7 +181,7 @@ export default function ContactSection() {
 						</div>
 
 						{/* Mensaje */}
-						<div className="">
+						<div className="col-span-full">
 							<label
 								htmlFor="message"
 								className="text-black text-sm font-semibold"
@@ -191,29 +194,27 @@ export default function ContactSection() {
 								value={formData.message}
 								onChange={handleChange}
 								rows="4"
-								className="w-full p-2 border border-gray-300 rounded-4xl text-secondary bg-white"
+								className="w-full p-2 border border-gray-300 rounded-2xl text-secondary bg-white"
 								required
 							/>
 						</div>
 
 						{/* Botón */}
-						<div className="py-3">
+						<div className="col-span-full">
 							<button
 								type="submit"
 								disabled={mutationLoading}
 								className={`bg-primary text-gris font-extrabold py-2 px-4 rounded-4xl shadow-sm w-full italic ${
 									mutationLoading
 										? "opacity-50 cursor-not-allowed"
-										: "hover:bg-primary-dark transition-colors duration-300"
+										: "hover:bg-secondary hover:text-white transition-colors duration-300"
 								}`}
 							>
-								{mutationLoading ? "SENT..." : "SUTMIT"}
+								{mutationLoading ? "SENT..." : "SUBMIT"}
 							</button>
 						</div>
 					</form>
-
-					{/* Información de contacto */}
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-6 text-sm">
+					<div className="flex flex-col sm:flex-row items-center place-content-around text-sm py-5">
 						<div className="flex items-center bg-white bg-opacity-80 rounded-full py-2 px-4 shadow-md">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
