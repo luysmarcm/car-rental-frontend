@@ -239,7 +239,7 @@ export default function ContactSection() {
 						<div className="flex items-center bg-white bg-opacity-80 rounded-full py-2 px-4 shadow-md">
 							<Mail className="feather feather-instagram text-secondary	 mr-2" />
 							<span className="text-secondary font-semibold text-sm">
-								viacarrental21@gmail.com
+								viatpareservation@gmail.com
 							</span>
 						</div>
 					</div>
