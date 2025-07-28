@@ -2,7 +2,7 @@
 'use server';
 
 import { Resend } from 'resend';
-const LOGO_URL = "../public/image/logo.jpg"; // Asegúrate de que esta ruta sea correcta y accesible
+const LOGO_URL = "https://res.cloudinary.com/dnnptmamr/image/upload/v1753720473/logo_p5sx1n.jpg"; // Asegúrate de que esta ruta sea correcta y accesible
 
 // Define las interfaces necesarias
 // Si estas interfaces ya están definidas en otro lugar, puedes importarlas.
@@ -60,12 +60,12 @@ export async function sendCustomerConfirmationEmail(emailDetails: EmailDetails) 
     await resend.emails.send({
       from: `Via Car Rental <noreply@${RESEND_VERIFIED_DOMAIN}>`,
       to: [customer.email],
-      subject: 'Confirmación de tu Reserva de Vehículo',
+      subject: 'Confirmation of your Vehicle Reservation',
       html: `
         <div style="font-family: Montserrat, sans-serif; line-height: 1.6; color: #333;">
           <div style="background-color: #f4f4f4; padding: 20px; text-align: center;">
             <img src=${LOGO_URL} alt="Company Logo" style="max-width: 150px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
-            <h1 style="color: #ffb800;">¡Hola ${customer.first_name} ${customer.last_name}!</h1>
+            <h1 style="color: #ffb800;">¡Hello ${customer.first_name} ${customer.last_name}!</h1>
           </div>
           <div style="padding: 20px; background-color: #ffffff;">
             <p>Your reservation has been successfully confirmed.</p>

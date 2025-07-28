@@ -8,11 +8,11 @@ import "slick-carousel/slick/slick-theme.css";
 
 const originalImages = [
 	{ src: "/image/toyota.png", alt: "Logo de Toyota" },
-	{ src: "/image/mazda.png", alt: "Logo de Mazda" },
-	{ src: "/image/nissan.png", alt: "Logo de Nissan" },
-	{ src: "/image/jeep.png", alt: "Logo de Jeep" },
-	{ src: "/image/honda.png", alt: "Logo de Honda" },
-	{ src: "/image/GMC.png", alt: "Logo de GMC" },
+	{ src: "/image/mazda_logo.png", alt: "Logo de Mazda" },
+	{ src: "/image/nissan_logo.png", alt: "Logo de Nissan" },
+	{ src: "/image/jeep_logo.png", alt: "Logo de Jeep" },
+	{ src: "/image/honda_logo.png", alt: "Logo de Honda" },
+	{ src: "/image/GMC_logo.png", alt: "Logo de GMC" },
 	{ src: "/image/hyundai.png", alt: "Logo de Hyundai" },
 	{ src: "/image/Volkswagen.png", alt: "Logo de Volkswagen" },
 ];
