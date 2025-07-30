@@ -11,10 +11,11 @@ const carImages = [
 	"/image/Corolla.png",
 	"/image/Elantra.png",
 	"/image/GMC.png",
-	"/image/Jeep.png",
+	"/image/jeep.png",
 	"/image/jetta.png",
 	"/image/mazda.png",
 	"/image/nissan.png",
+	"/image/honda.png"
 	// puedes agregar más imágenes aquí
 ];
 
