@@ -353,7 +353,7 @@ const FormBooking = () => {
 							name="selectedLocationId"
 							value={reservationFormData.selectedLocationId}
 							onChange={handleReservationChange}
-							className="flex-grow bg-transparent outline-none text-negro text-sm leading-none appearance-none truncate"
+							className="flex-grow bg-transparent outline-none text-black text-sm leading-none appearance-none truncate  rounded-lg focus:ring-primary focus:border-primary block w-full "
 							required
 						>
 							<option value="">Select a location</option>
