@@ -1,9 +1,9 @@
-// components/FormBooking.jsx (or wherever your component is located)
 "use client";
 import React from "react";
 import { useMutation, useQuery } from "@apollo/client";
 import { useState, useEffect } from "react";
 import { GET_CAR_TYPES } from "@/lib/graphql/cars";
+import { GET_LOCATIONS } from "@/lib/graphql/locations";
 import { CREATE_RESERVATION } from "@/lib/graphql/reservations";
 import { CREATE_CUSTOMER } from "@/lib/graphql/customers";
 import { MapPin, CalendarSearch, Clock9, ChevronDown } from "lucide-react";
@@ -24,8 +24,8 @@ const FormBooking = () => {
 		pickup_time: "10:00",
 		dropoff_date: today,
 		dropoff_time: "10:00",
-		location: "",
 		selectedTypeId: "",
+		selectedLocationId: "", // State for selected location's documentId
 		totalPrice: 0,
 	});
 
@@ -38,12 +38,19 @@ const FormBooking = () => {
 	});
 
 	const [showClientModal, setShowClientModal] = useState(false);
-	const [dateValidationError, setDateValidationError] = useState(null);
+	const [calculatedNumberOfDays, setCalculatedNumberOfDays] = useState(0); // Nuevo estado para el número de días
+
 	const {
 		data: carTypesData,
 		loading: carTypesLoading,
 		error: carTypesError,
 	} = useQuery(GET_CAR_TYPES);
+
+	const {
+		data: locationsData, // Fetch locations data
+		loading: locationsLoading,
+		error: locationsError,
+	} = useQuery(GET_LOCATIONS);
 
 	const [
 		createReservation,
@@ -75,53 +82,70 @@ const FormBooking = () => {
 	};
 
 	useEffect(() => {
-		const { pickup_date, dropoff_date, selectedTypeId } = reservationFormData;
+		const {
+			pickup_date,
+			pickup_time,
+			dropoff_date,
+			dropoff_time,
+			selectedTypeId,
+			selectedLocationId,
+		} = reservationFormData;
 
 		if (
 			!pickup_date ||
+			!pickup_time ||
 			!dropoff_date ||
+			!dropoff_time ||
 			!selectedTypeId ||
+			!selectedLocationId ||
 			!carTypesData ||
-			carTypesLoading
+			carTypesLoading ||
+			!locationsData
 		) {
 			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
-			setDateValidationError(null);
+			setCalculatedNumberOfDays(0); // Resetear el contador de días
 			return;
 		}
 
-		const pickupDateObj = new Date(pickup_date);
-		const dropoffDateObj = new Date(dropoff_date);
+		const pickupDateTime = new Date(`${pickup_date}T${pickup_time}:00`);
+		const dropoffDateTime = new Date(`${dropoff_date}T${dropoff_time}:00`);
 
-		if (dropoffDateObj < pickupDateObj) {
-			setDateValidationError(
-				"La fecha de regreso no puede ser anterior a la fecha de inicio."
-			);
+		if (isNaN(pickupDateTime.getTime()) || isNaN(dropoffDateTime.getTime())) {
 			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			setCalculatedNumberOfDays(0); // Resetear el contador de días
 			return;
-		} else {
-			setDateValidationError(null);
+		}
+
+		if (dropoffDateTime < pickupDateTime) {
+			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			setCalculatedNumberOfDays(0); // Resetear el contador de días
+			return;
 		}
 
 		const selectedCarType = carTypesData.types.find(
 			(type) => type.documentId === selectedTypeId
 		);
 
-		if (!selectedCarType) {
+		const selectedLocation = locationsData.locations.find(
+			(loc) => loc.documentId === selectedLocationId
+		);
+
+		if (!selectedCarType || !selectedLocation) {
 			setReservationFormData((prev) => ({ ...prev, totalPrice: 0 }));
+			setCalculatedNumberOfDays(0); // Resetear el contador de días
 			return;
 		}
 
 		const pricePerDay = selectedCarType.price;
 
-		const timeDiff = dropoffDateObj.getTime() - pickupDateObj.getTime();
-		let numberOfDays = Math.round(timeDiff / MS_PER_DAY);
+		const timeDiff = dropoffDateTime.getTime() - pickupDateTime.getTime();
+		let numberOfDays = Math.ceil(timeDiff / MS_PER_DAY);
 
-		if (numberOfDays === 0) {
+		if (numberOfDays <= 0) {
 			numberOfDays = 1;
-		} else {
-			numberOfDays += 1;
 		}
 
+		setCalculatedNumberOfDays(numberOfDays); // Actualizar el estado del número de días
 		const calculatedTotalPrice = numberOfDays * pricePerDay;
 		setReservationFormData((prev) => ({
 			...prev,
@@ -129,28 +153,50 @@ const FormBooking = () => {
 		}));
 	}, [
 		reservationFormData.pickup_date,
+		reservationFormData.pickup_time,
 		reservationFormData.dropoff_date,
+		reservationFormData.dropoff_time,
 		reservationFormData.selectedTypeId,
+		reservationFormData.selectedLocationId,
 		carTypesData,
 		carTypesLoading,
+		locationsData,
 	]);
 
 	const handleInitialSubmit = async (e) => {
 		e.preventDefault();
 
+		if (!reservationFormData.selectedLocationId) {
+			toast.error("Por favor, selecciona una ubicación de recogida.");
+			return;
+		}
+
 		if (
-			!reservationFormData.location ||
 			!reservationFormData.pickup_date ||
-			!reservationFormData.dropoff_date
+			!reservationFormData.dropoff_date ||
+			!reservationFormData.pickup_time ||
+			!reservationFormData.dropoff_time
 		) {
 			toast.error(
-				"Por favor, completa la ubicación y las fechas de recogida/devolución."
+				"Por favor, completa las fechas y horas de recogida/devolución."
 			);
 			return;
 		}
 
-		if (dateValidationError) {
-			toast.error(dateValidationError);
+		const pickupDateTime = new Date(
+			`${reservationFormData.pickup_date}T${reservationFormData.pickup_time}:00`
+		);
+		const dropoffDateTime = new Date(
+			`${reservationFormData.dropoff_date}T${reservationFormData.dropoff_time}:00`
+		);
+
+		if (isNaN(pickupDateTime.getTime()) || isNaN(dropoffDateTime.getTime())) {
+			toast.error("The dates or times selected are not valid. Please check your inputs.");
+			return;
+		}
+
+		if (dropoffDateTime < pickupDateTime) {
+			toast.error("The return date cannot be earlier than the start date. Please check your dates.");
 			return;
 		}
 
@@ -195,9 +241,8 @@ const FormBooking = () => {
 				},
 			});
 
-			// Extract the full customer object from the response
 			const newCustomer = customerResponse.data.createCustomer;
-			const customerDocumentId = newCustomer.documentId; // Use this for reservation
+			const customerDocumentId = newCustomer.documentId;
 
 			console.log(
 				"documentId del cliente creado (obtenido de la respuesta de Strapi):",
@@ -216,7 +261,7 @@ const FormBooking = () => {
 				pickup_time: formattedPickupTime,
 				dropoff_date: reservationFormData.dropoff_date,
 				dropoff_time: formattedDropoffTime,
-				location: reservationFormData.location,
+				location: reservationFormData.selectedLocationId,
 				type: reservationFormData.selectedTypeId,
 				total_price: reservationFormData.totalPrice,
 				customer: customerDocumentId,
@@ -233,24 +278,28 @@ const FormBooking = () => {
 				},
 			});
 
-			// Extract the full reservation object from the response
 			const newReservation = reservationResponse.data.createReservation;
 
-			// Find the selected car type name for email details
 			const selectedCarType = carTypesData.types.find(
 				(car) => car.documentId === newReservation.type.documentId
 			);
 			const carTypeName = selectedCarType ? selectedCarType.name : "N/A";
 
+			const selectedLocation = locationsData?.locations?.find(
+				(loc) => loc.documentId === newReservation.location.documentId
+			);
+			const locationName = selectedLocation ? selectedLocation.name : "N/A";
+
 			// Prepare email details
 			const emailDetails = {
-				customer: newCustomer, // Pass the full customer object
-				reservation: newReservation, // Pass the full reservation object
+				customer: newCustomer,
+				reservation: newReservation,
 				carTypeName: carTypeName,
-				totalPrice: newReservation.total_price, // Use totalPrice from the confirmed reservation
+				locationName: locationName,
+				totalPrice: newReservation.total_price,
+				numberOfDays: calculatedNumberOfDays, // Pasar el número de días calculado
 			};
 
-			// Send emails using the server actions
 			await sendCustomerConfirmationEmail(emailDetails);
 			await sendAdminNotificationEmail(emailDetails);
 
@@ -258,12 +307,12 @@ const FormBooking = () => {
 
 			setShowClientModal(false);
 			setReservationFormData({
-				pickup_date: today, // Reset to today or a default for next booking
+				pickup_date: today,
 				pickup_time: "10:00",
-				dropoff_date: today, // Reset to today or a default for next booking
+				dropoff_date: today,
 				dropoff_time: "10:00",
-				location: "",
 				selectedTypeId: "",
+				selectedLocationId: "",
 				totalPrice: 0,
 			});
 			setClientFormData({
@@ -273,6 +322,7 @@ const FormBooking = () => {
 				phone: "",
 				driver_age: "",
 			});
+			setCalculatedNumberOfDays(0); // Resetear el contador de días al finalizar la reserva
 		} catch (err) {
 			console.error("Error during booking process:", err);
 			const errorMessage =
@@ -291,23 +341,37 @@ const FormBooking = () => {
 			>
 				<div className="col-span-1">
 					<label
-						htmlFor="pickupLocation"
+						htmlFor="selectedLocationId"
 						className="text-black text-sm font-semibold mb-1 block"
 					>
 						Pickup Location
 					</label>
-					<div className="flex items-center bg-white p-2 border rounded-4xl border-gray-200">
+					<div className="truncate whitespace-nowrap  flex items-center bg-white p-2 border rounded-4xl border-gray-200">
 						<MapPin className="text-secondary mr-2" />
-						<input
-							type="text"
-							id="location"
-							name="location"
-							placeholder="City, airport, etc."
-							value={reservationFormData.location}
+						<select
+							id="selectedLocationId"
+							name="selectedLocationId"
+							value={reservationFormData.selectedLocationId}
 							onChange={handleReservationChange}
-							className="flex-grow bg-transparent outline-none text-negro text-sm leading-none"
+							className="flex-grow bg-transparent outline-none text-negro text-sm leading-none appearance-none truncate"
 							required
-						/>
+						>
+							<option value="">Select a location</option>
+							{locationsLoading && (
+								<option disabled>Loading Locations...</option>
+							)}
+							{locationsError && (
+								<option disabled>
+									Error al cargar ubicaciones: {locationsError.message}
+								</option>
+							)}
+							{locationsData?.locations?.map((location) => (
+								<option key={location.documentId} value={location.documentId}>
+									{location.name}
+								</option>
+							))}
+						</select>
+						<ChevronDown className="text-secondary ml-2" />{" "}
 					</div>
 				</div>
 
@@ -395,20 +459,14 @@ const FormBooking = () => {
 					</div>
 				</div>
 
-				{dateValidationError && (
-					<p className="col-span-full text-red-600 text-sm mt-2">
-						{dateValidationError}
-					</p>
-				)}
-
 				<div className="col-span-1 sm:col-span-2 lg:col-span-1">
 					<button
-						type="submit" // Este botón ahora solo abre el modal
-						disabled={isFormLoading || dateValidationError}
+						type="submit"
+						disabled={isFormLoading || !reservationFormData.selectedLocationId}
 						className={`w-full bg-secondary text-white font-semibold py-3 px-2 rounded-4xl shadow-md transition-colors duration-300 uppercase tracking-wider text-lg ${
-							isFormLoading || dateValidationError
+							isFormLoading || !reservationFormData.selectedLocationId
 								? "bg-gray-400 cursor-not-allowed"
-								: "hover:bg-blue-700 hover:bg-gris hover:text-secondary"
+								: "hover:text-white hover:bg-gris "
 						}`}
 					>
 						{isFormLoading ? "Loading..." : "GO"}
@@ -503,7 +561,7 @@ const FormBooking = () => {
 								</div>
 							</div>
 
-							{/* Nuevo campo para driver_age */}
+							{/* Campo para driver_age */}
 							<div className="col-span-full">
 								<label
 									htmlFor="driver_age"
@@ -574,15 +632,17 @@ const FormBooking = () => {
 										isFormLoading ||
 										reservationFormData.totalPrice <= 0 ||
 										!reservationFormData.selectedTypeId ||
-										!clientFormData.driver_age
+										!clientFormData.driver_age ||
+										!reservationFormData.selectedLocationId
 									}
 									className={`flex-1 bg-primary text-gris font-semibold py-3 px-2 rounded-4xl shadow-md transition-colors duration-300 uppercase tracking-wider text-base md:text-lg ${
 										isFormLoading ||
 										reservationFormData.totalPrice <= 0 ||
 										!reservationFormData.selectedTypeId ||
-										!clientFormData.driver_age
+										!clientFormData.driver_age ||
+										!reservationFormData.selectedLocationId
 											? "bg-gray-400 cursor-not-allowed"
-											: "hover:bg-secondary"
+											: "hover:bg-secondary hover:text-white"
 									}`}
 								>
 									{isFormLoading ? "Processing..." : "Submit"}

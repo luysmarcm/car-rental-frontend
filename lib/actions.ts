@@ -1,4 +1,4 @@
-// lib/actions.ts
+/// lib/actions.ts
 'use server';
 
 import { Resend } from 'resend';
@@ -22,18 +22,21 @@ interface CarTypeData {
   price: number;
 }
 
+// La interfaz ReservationData solo necesita el documentId de la ubicación,
+// ya que el nombre de la ubicación se pasa por separado en EmailDetails.
 interface ReservationData {
   dropoff_date: string;
   dropoff_time: string;
   pickup_date: string;
   pickup_time: string;
-  location: string;
+  location: string; // Este es el documentId de la ubicación
   total_price: number;
   customer: {
     first_name: string;
     last_name: string;
   };
   type: CarTypeData; // Aseguramos que el tipo contenga documentId, name y price
+  // No necesitamos 'location: Location;' aquí si el nombre se pasa por 'locationName' en EmailDetails
 }
 
 interface EmailDetails {
@@ -41,6 +44,8 @@ interface EmailDetails {
   reservation: ReservationData;
   carTypeName: string; // Nombre del tipo de coche
   totalPrice: number; // Precio total de la reserva
+  locationName: string; // Nombre de la ubicación (añadido para mostrar en el correo)
+  numberOfDays: number; // Nuevo: Número de días de la reserva
 }
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -48,13 +53,38 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const RESEND_VERIFIED_DOMAIN = process.env.RESEND_VERIFIED_DOMAIN;
 
+/**
+ * Helper function to format time string (HH:MM:SS.000) to HH:MM AM/PM
+ * @param timeStr The time string from the reservation (e.g., "10:00:00.000")
+ * @returns Formatted time string (e.g., "10:00 AM")
+ */
+function formatTimeForEmail(timeStr: string): string {
+    if (!timeStr) return "N/A";
+    try {
+        const [hours, minutes] = timeStr.split(':');
+        let hour = parseInt(hours, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        hour = hour % 12;
+        hour = hour ? hour : 12; // The hour '0' should be '12'
+        const formattedMinutes = minutes.padStart(2, '0');
+        return `${hour}:${formattedMinutes} ${ampm}`;
+    } catch (e) {
+        console.error("Error formatting time:", timeStr, e);
+        return timeStr.substring(0, 5); // Fallback to HH:MM if parsing fails
+    }
+}
+
 export async function sendCustomerConfirmationEmail(emailDetails: EmailDetails) {
-  const { customer, reservation, carTypeName, totalPrice } = emailDetails;
+  const { customer, reservation, carTypeName, locationName, totalPrice, numberOfDays } = emailDetails; // Usar numberOfDays
 
   if (!RESEND_VERIFIED_DOMAIN) {
     console.error('RESEND_VERIFIED_DOMAIN is not set in environment variables.');
     return { success: false, error: 'Server configuration error.' };
   }
+
+  // Formatear las horas para el correo
+  const formattedPickupTime = formatTimeForEmail(reservation.pickup_time);
+  const formattedDropoffTime = formatTimeForEmail(reservation.dropoff_time);
 
   try {
     await resend.emails.send({
@@ -71,10 +101,11 @@ export async function sendCustomerConfirmationEmail(emailDetails: EmailDetails) 
             <p>Your reservation has been successfully confirmed.</p>
             <p><strong>Reservation Details:</strong></p>
             <ul style="list-style-type: none; padding: 0;">
-              <li style="margin-bottom: 10px;"><strong>Vehicle Type</strong> ${carTypeName}</li>
-              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${reservation.location}</li>
-              <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${reservation.pickup_time}</li>
-              <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${reservation.dropoff_time}</li>
+              <li style="margin-bottom: 10px;"><strong>Vehicle Type:</strong> ${carTypeName}</li>
+              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${locationName}</li>
+              <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${formattedPickupTime}</li>
+              <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${formattedDropoffTime}</li>
+              <li style="margin-bottom: 10px;"><strong>Number of Days:</strong> ${numberOfDays}</li>
               <li style="margin-bottom: 10px;"><strong>Total Price: </strong> $${totalPrice.toFixed(2)}</li>
             </ul>
             <p>We will contact you if we need more information.</p>
@@ -97,12 +128,16 @@ export async function sendCustomerConfirmationEmail(emailDetails: EmailDetails) 
 }
 
 export async function sendAdminNotificationEmail(emailDetails: EmailDetails) {
-  const { customer, reservation, carTypeName, totalPrice } = emailDetails;
+  const { customer, reservation, carTypeName, locationName, totalPrice, numberOfDays } = emailDetails; // Usar numberOfDays
 
   if (!ADMIN_EMAIL || !RESEND_VERIFIED_DOMAIN) {
     console.error('ADMIN_EMAIL or RESEND_VERIFIED_DOMAIN is not set in environment variables.');
     return { success: false, error: 'Server configuration error.' };
   }
+
+  // Formatear las horas para el correo
+  const formattedPickupTime = formatTimeForEmail(reservation.pickup_time);
+  const formattedDropoffTime = formatTimeForEmail(reservation.dropoff_time);
 
   try {
     await resend.emails.send({
@@ -115,19 +150,19 @@ export async function sendAdminNotificationEmail(emailDetails: EmailDetails) {
             <p>Your reservation has been successfully confirmed.</p>
             <p><strong>Customer Details:</strong></p>
             <ul style="list-style-type: none; padding: 0;">
-              <li style="margin-bottom: 10px;"><strong>First Name</strong> ${customer.first_name}</li>
-              <li style="margin-bottom: 10px;"><strong>Last Name</strong> ${customer.last_name}</li>
+              <li style="margin-bottom: 10px;"><strong>First Name:</strong> ${customer.first_name}</li>
+              <li style="margin-bottom: 10px;"><strong>Last Name:</strong> ${customer.last_name}</li>
               <li style="margin-bottom: 10px;"><strong>Email:</strong> ${customer.email}</li>
               <li style="margin-bottom: 10px;"><strong>Phone:</strong> ${customer.phone}</li>
               <li style="margin-bottom: 10px;"><strong>Age:</strong> ${customer.driver_age}</li>
-      
             </ul>
             <p><strong>Reservation Details:</strong></p>
             <ul style="list-style-type: none; padding: 0;">
-              <li style="margin-bottom: 10px;"><strong>Vehicle Type</strong> ${carTypeName}</li>
-              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${reservation.location}</li>
-              <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${reservation.pickup_time}</li>
-              <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${reservation.dropoff_time}</li>
+              <li style="margin-bottom: 10px;"><strong>Vehicle Type:</strong> ${carTypeName}</li>
+              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${locationName}</li>
+              <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${formattedPickupTime}</li>
+              <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${formattedDropoffTime}</li>
+              <li style="margin-bottom: 10px;"><strong>Number of Days:</strong> ${numberOfDays}</li>
               <li style="margin-bottom: 10px;"><strong>Total Price: </strong> $${totalPrice.toFixed(2)}</li>
             </ul>
             <p style="font-size: 0.9em; color: #777;">Este es un mensaje automático, por favor no respondas a este correo.</p>
