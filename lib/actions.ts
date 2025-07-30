@@ -102,7 +102,7 @@ export async function sendCustomerConfirmationEmail(emailDetails: EmailDetails) 
             <p><strong>Reservation Details:</strong></p>
             <ul style="list-style-type: none; padding: 0;">
               <li style="margin-bottom: 10px;"><strong>Vehicle Type:</strong> ${carTypeName}</li>
-              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${locationName}</li>
+              <li style="margin-bottom: 10px;"><strong>Location:</strong> ${locationName}</li>
               <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${formattedPickupTime}</li>
               <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${formattedDropoffTime}</li>
               <li style="margin-bottom: 10px;"><strong>Number of Days:</strong> ${numberOfDays}</li>
@@ -159,13 +159,12 @@ export async function sendAdminNotificationEmail(emailDetails: EmailDetails) {
             <p><strong>Reservation Details:</strong></p>
             <ul style="list-style-type: none; padding: 0;">
               <li style="margin-bottom: 10px;"><strong>Vehicle Type:</strong> ${carTypeName}</li>
-              <li style="margin-bottom: 10px;"><strong>Ubicación:</strong> ${locationName}</li>
+              <li style="margin-bottom: 10px;"><strong>Location:</strong> ${locationName}</li>
               <li style="margin-bottom: 10px;"><strong>Pickup:</strong> ${reservation.pickup_date} a las ${formattedPickupTime}</li>
               <li style="margin-bottom: 10px;"><strong>Drop-off:</strong> ${reservation.dropoff_date} a las ${formattedDropoffTime}</li>
               <li style="margin-bottom: 10px;"><strong>Number of Days:</strong> ${numberOfDays}</li>
               <li style="margin-bottom: 10px;"><strong>Total Price: </strong> $${totalPrice.toFixed(2)}</li>
             </ul>
-            <p style="font-size: 0.9em; color: #777;">Este es un mensaje automático, por favor no respondas a este correo.</p>
           </div>
           <div style="background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 0.8em; color: #555;">
             &copy; ${new Date().getFullYear()} Via Car Rental. All rights reserved.
